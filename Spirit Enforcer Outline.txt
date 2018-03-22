@@ -1,0 +1,329 @@
+Design outline
+
+Search for subjects determined by a number and letter designation.
+
+Table of Contents:
+	1.  Demo Goals
+	1a. Type
+	1b. Name
+	1c. Description
+	2.  Concepts
+	2a. Stats
+	2b. Formulas
+	3.  Mechanics
+	3a. Move Types
+	3b. Attack Attributes
+	3c. Element Cycle
+	3d. Invincibility
+	3e. Weapon Types
+	4.  Controller
+	5.  Unique Mechanics
+	5a. Player Specific
+	5b. Enemy Specific
+
+1.  Demo Goals: A game with most of its MVP (minimum viable product) inspired by the Megaman Zero/Zx series. The first actual demo should have the capability of
+	Walking, Crouching, Crawling, Jumping, Falling, Death, Wall-sliding, An attack of some sort, transition from a Dash to a Run or Crawl, transition from a Run to a Slide.
+	a transition from a Slide to a Crouch, Climbing, Hanging, 1 test dummy, and opening a test menu. 
+	
+1a. Type: Action RPG Platformer
+1b. Name: Spirit Enforcer
+1c. Description: 
+ 
+2.  Concepts: Mechanics behind everything
+	  Global: Everything must follow these rules:
+		Same Hp system (everyone can be hit)
+		Same Physical attack system (anyone can hit)
+		Same Physical Defense system (everyone can defend)
+		Everything follows the Elemental Weakness Cycle
+		Everything follows Attack property Attributes
+		
+		Health points(HP): Vitality of character. Every time damage is dealt, half the damage dealt is bleed damage. 
+		Bleed - this regenerates overtime if not hit 
+		(ex: = HP | - Bleed | _ no HP. 
+		8 HP ========, take 4 damage, 4 HP ====--__, 5 HP =====-__, 6 HP ======__)
+	
+		Spiritual Power(SP): Energy used to perform Charge Attacks. Unless hit by a Piercing attack, all damage is dealt to SP before HP.
+		Stamina Level (SL): When SP is empty, SL is used for Charge Attacks at double cost. SL regenerates and is ignored when taking damage unless specified.
+		Any charged attacks made with SP deal 2x damage.
+		
+
+2a. Stats: Base characteristics such as attack power.
+	--core
+		Level      : Character level (multiplier is from level 1 [0.1] to 100[10], this means every level is an extra 0.1 to the multiplier in a formula). var levelActual.
+		Health     : Life points. 2 variables, HpMax and HpNow.
+		Spirit     : Energy points. 2 variables, SpiritMax and SpiritNow.
+		Stamina    : Secondary energy points. 2 variables, StaminaMax and StaminaNow.
+	--battle
+		Attack     : The core value determining just how much damage will be dealt per hit. This variable can increase based on weapons.
+		Defense    : A core value which will determine how much damage you take once Spirit is gone. This variable can increase based on armor.
+		SPAttack   : Spiritual attack. This is only used when SpiritNow is > 0. Spirit moves that use more than you have cant be used. Stamina takes over when this runs out.
+		SPDefense  : Spiritual defense. This is only used when SpiritNow is > 0. No matter how much damage the attack deals, if you have this, you take 0 damage. 
+	--modifier (these have Deviation applied to them in a stat formula. Deviation is explained in Stat formulas)
+		Strength   : A modifier value determining life and stamina.
+		Vitality   : A modifier value determining life and spirit.
+		Endurance  : A modifier value determining Stamina.
+	--hidden
+		Speed      : Base speed value. base value is preset and may differ by small amounts like 2-5% from the norm.
+		Experience : Points for level ups
+		Regenerate : Rate at which bleed and stamina refill. These will both share a variable unless proven to be a bad idea.
+	--base
+		//these values are all labeled as (base/4) below in the formulas and accordingly and are all constants for each player character only
+		baseHealth
+		baseSpirit
+		baseStamina
+		baseAttack
+		baseDefense
+		baseSpAttack
+		baseSpDefense
+	--enemy
+	
+	
+2b. Stat formulas:  How each stats base affects each other (all values will be floored). 
+					A deviation value is out of a max of 5, a multiplier that is applied to all modifier stats; some positive and some negative.
+					Theres a deviation for all modifiers and player battle stats. Ex: 0.5 + 0.5 + 0.5 + 0.5 + 0.5 + 0.5 + 0.5 + 0.5 + 0.5 + 0.5 = 5;
+					This means that in order from 1 to 10, these multipliers will make some characters stronger or weaker despite having a similar base stat total.
+					Just note that these values will be more balanced and less extreme and are still subject to change. 
+					Originally, only 5 deviant values were intended for more subtle changes.
+	----players		// _ means through
+	LevelDisplay  = (LevelActual * 10);
+	Health        = (base/4) + (Vitality  * DevVit)     +     (Strength * DevStr) * (DevHp)     * LevelActual;
+	Spirit        = (base/4) +      (HpMax / 2)         +     (Vitality * DevVit) * (DevSp)     * LevelActual;	
+	Stamina       = (base/4) + (Endurance * DevEnd)     +     (Strength * DevStr) * (DevSt)     * LevelActual;
+	DamageAttack  = (base/4) +  (Attack   * DevAtt)     + rand((levelDisplay/2) _ levelDisplay) * LevelActual * (determined by weapon attribute) ;
+	DamageDefense = (base/4) +  (Defense  * DevDef)     + rand((levelDisplay/2) _ levelDisplay) * LevelActual * (determined by element);
+	SpiritAttack  = (base/4) +  (SPAttack * DevSAtt)    + rand((levelDisplay/2) _ levelDisplay) * LevelActual * 2 * (determined by weapon attribute);
+	SpiritDefense = (base/4) + (SPDefense * DevSDef)    + rand((levelDisplay/2) _ levelDisplay) * LevelActual * (determined by element);
+	Dash          = Speed * 2.25; //dash multiplier, subject to change into vector formula later.
+	----enemies     //Machines use physical, Fiends use Spirit, Humans have both.
+	EnemyAttack   =
+	EnemyDefense  =
+	EnemySAttack  =
+	EnemySDefense =
+	----3rd party ideas
+	Virus defense = 100 - levelDisplay; //intended to make you take more damage the stronger you are. Daizo
+
+3. 	Mechanics
+
+3a. Move Types: Class of Move
+	Basic  - Simple moves and varies with character. Uses no SP.
+	Charge - Moves that require SP or SL to perform.
+	Spirit - Special ability specific to a character. Requirements Vary.
+	Shield - Moves that reduce or negate damage. Requirements Vary.
+
+3b. Attack Attributes: Secondary effects
+	Piercing  - If target has spiritual power left, damage is multiplied by 0.5 and hits HP and SP.
+	 (ex: HP 8(0 bleed) SP 8 SL 8) (HP 8(0 bleed) SP 0 SL 8) - Attack deals 4 damage. 
+	 (    HP 6(1 bleed) SP 6 SL 8) (HP 4(2 bleed) SP 0 SL 8)
+	 
+	Break     - Deals double damage to SP. If SP is empty, normal damage is dealt to HP and Stamina
+	 (ex: HP 8(0 bleed) SP 8 SL 8)  (HP 8(0 bleed) SP 0 SL 8) - assume attacks do 4 damage.
+	 (    HP 8(0 bleed) SP 0 SL 8)  (HP 4(2 bleed) SP 0 SL 4)
+	
+	Cut       - Does not cause Bleed damage	(as backwards as this sounds, it means it leaves no chance to recover hp over time)
+	 (ex: HP 8 SP 8 SL 8) (HP 8 SP 0 SL 8) - assume 4 damage
+	 (    HP 8 SP 4 SL 8) (HP 4 SP 0 SL 8)
+	
+	Stacked   - If you have 2 of the same effect active,
+	
+	Normal    - Most basic attacks without a core element fall under this. Just damage and no special effects.
+	Null      - Neutrally affected by elements as a character element and ignores damage reduction as an attack element. (Just another name for normal)
+	Divine    - Ignores Invincibility.
+	Water     - 0.5x SL Regeneration, stamina takes longer to regenerate. Subject to change, only hinders player.
+	Fire      - 1.5x Damage to SP, takes damage and applies it to sp at 50% more.
+	Wind      - 0.5x Bleed Damage, ex: with 8 hp, take 4 and get 2 bleed, wind makes it 1 bleed instead.
+	Lightning - Ignores most Shields, enemy shields wont defend against this element, but its usually the lowest damage per hit.
+	Ice       - Pierce effect
+	Metal     - Break effect
+	Plasma    - Cut effect	
+	
+3c. Elemental Cycle: Core Elements only - 1.5x damage if element is stronger / 0.5x damage if element is weaker
+				 Sub  Elements only - Native Attack Attribute
+	Core Element - Water, Fire, Lightning, Wind
+	Sub  Element - Ice, Metal, Plasma
+	Special      - Divine, Null
+	Basic        - Normal
+	
+	Overdrive (OD): Powers up character overall until you turn it off, run out of SP, or get hit. Uses 1 SP per second. (2 perks, a weakness)
+	Name      - Attack Multiplier      OD: Effect
+	Null      - No Damage Multiplier.  OD: Can be used with SL; 1.2x damage and Half Charge moves replace uncharged Basic moves. You take no Bleed damage.
+	Divine    - Always Wins.           OD: Unlimited use; Half Charge moves replace uncharged Basic moves. SP won't protect you and you stop moving while attacking on ground.
+	Water     - Beats Fire             OD: Adds Water     to Basic attacks; Only take Bleed damage. Bleed damage doesn't regenerate while OD is active.
+	Fire      - Beats Wind             OD: Adds Fire      to Basic attacks; 2x damage to Charge attacks. Restricted mobility.
+	Wind      - Beats Lightning        OD: Adds Wind      to Basic attacks; Ignores Invincibility. 2x Damage taken.
+	Lightning - Beats Water            OD: Adds Lightning to Basic attacks; Stick to walls and Fast Charge. No Invincibility.
+	Ice       - Beats Plasma           OD: Adds Ice       to Basic attacks; 2x Damage with Pierce. 2x Damage taken from Break. 
+	Metal     - Beats Ice              OD: Adds Metal     to Basic attacks; 0.5x Damage taken from non-Cut attacks. 2x Damage taken from Cut
+	Plasma    - Beats Metal            OD: Adds Plasma    to Basic attacks; Ignores Shields. 2x Damage taken from Pierce
+	
+3d. Invincibility Mechanics:
+	When hit, you gain invincibility frames for about 3 seconds. (When in free-roam mode, only the player and NPC characters get this. In Mission mode, Boss Level Enemies gain this benefit)
+		Combo Value (CV): Each Attack has a Combo Value. When a hit is landed, Invincibility on the recipient is triggered and the CV is stored until it ends.
+		CV defaults to 0, so when at 0, any attack can land. 
+		CV 1 is special as any attack with CV 1 can combo with another CV 1 attack despite invincibility.
+		CV 2+ is where each attack differs. If you hit with a move that has CV 2, you must either wait out the invincibility time, 
+			or hit with a move with a CV of 3 or more.
+		As long as the CV is higher than the the CV stored in invincibility from being hit, you can hit through it.
+
+3e. Weapon Type/Descriptions: (1 Main weapon and 1 Sub weapon can be equipped. Size limit is 3 Slots) (level 1 charge is half, 2 is full. 3 is max)
+							  Weapons all can be charged. The amount they charge, if at all, depends on the remaining slots. 2 slot weapons cannot be paired
+							  with each other. 
+							  ___________________________________
+							 | Chart | Weapons | Slots | Chg Lvl |
+							 |   1   |    2    |   0   |    1    |
+							 |   2   |    2    |   1   |    1    |
+							 |   3   |    1    |   1   |    2    |
+							 |   4   |    1    |   2   |    3    |
+							 |___________________________________|
+
+							 	
+	Buster Gun--: A chargeable gun that fires shots. Shots can be charged up multiple levels.
+	----Main----: Shots are fired out straight ahead. CV 2 for uncharged. 
+	----Alt Main: Automatic fire at regular intervals. Can be used while charging up a shot.
+	----Sub-----: Charge will work like normal, but will 3 round burst normally and has a delay between bursts. CV 7,8,9.
+	----Slot----: 1
+	----Charge--: Half charge costs nothing to fire, L2 costs SP/SL and is much stronger, and L3 is unique to the gun. CV 3 for level 1 and 2 Charge. CV 4 for level 3 Charge.
+	----Melee---: None
+	----Stand---: Normal
+	----Crouch--: Lower than normal
+	----Walk----: Normal
+	----Crawl---: Lower than Crouch
+	----Dash----: Shots travel faster and deal a little more damage.
+	----Run-----: Same as Dash
+	----Air-----: Same as normal relative to your altitude.
+	----W. Slide: Same as Air
+	----G. Slide: Same as Dash
+	----Hanging-: Normal in whichever direction you're facing
+	----Ladder--: Normal in whatever direction you choose.
+	
+	Rifle-------: A large gun for automatic rapid fire and close range knock-back.
+	----Main----: Weak Rapid fire shots. Can't move while firing, but can aim it in up to 8 directions depending on stance. CV 1 for Rapid fire.
+	----Alt Main: Melee. You will stop in place. Can be charged to use the rifles special weapon.
+	----Sub-----: Melee while 4 round bursting. (4 shots, downright, forward, forward up, and straight up)
+	----Slot----: 2
+	----Charge--: Special attachment depending on rifle. Shotgun/ CV 2
+	----Melee---: A frontal upward swipe with generous range. CV 3 for Melee.
+	----Stand---: Behaves as normal. Can fire in 8 octagonal directions. This is the position you will be in while using the Melee.
+	----Crouch--: Can fire in Level and upward directions only (5 directions).
+	----Walk----: Stop to a stand.
+	----Crawl---: Can fire only forward and up.
+	----Dash----: Will drop to a crawl.
+	----Run-----: Will Slide.
+	----Air-----: Can fire in all 8 directions. Melee will be a shorter overhead smash.
+	----W. Slide: Can only fire forward. Melee works like its air counterpart.
+	----G. Slide: Can only fire in a diagonal upward shot.
+	----Hanging-: Can fire in all 8 directions
+	----Ladder--: Can fire in all 8 directions.
+	
+	Shield------: Reflects uncharged shots. CV is the same as whats reflected.
+	----Main----: Melee bash the shield in front of you. Hold to charge. CV 3
+	----Alt Main: Hold the shield in front of you reflecting any shots.
+	----Sub-----: Same as Alt.
+	----Slot----: 1
+	----Charge--: Requires 1 Spare slot. Will not charge otherwise. L2 will Melee bash with a CV of 1. L3 will double the damage.
+	----Melee---: A forward Shield bash. When Charged, it will shoot forward a short range blast.
+	----Stand---: Normal. 
+	----Crouch--: Hide behind the Shield completely.
+	----Walk----: Normal.
+	----Crawl---: Revert to Crouch.
+	----Dash----: Revert to Crouch.
+	----Run-----: Normal.
+	----Air-----: Normal.
+	----W. Slide: Normal.
+	----G. Slide: Revert to Crouch.
+	----Hanging-: Normal. 
+	----Ladder--: Normal.
+	
+	Spear-------: Stab weapon in various directions.  
+	----Main----: Single stab in up to 8 directions; this can be charged. CV 5 
+	----Alt Main: A single large overhead slash. CV 4
+	----Sub-----: Main.
+	----Slot----: 2 
+	----Charge--: A strong stab in 8 directions. When pointing down, it can be used to high jump CV 3. When aimed up into a roof, you can stick to the ceiling.
+	----Melee---: Cutting type
+	----Stand---: Normal. 
+	----Crouch--: Can aim in only 5 directions. No downward aiming. Alt main will be a 180 degree overhead swipe CV 8.
+	----Walk----: Will stop to a Stand.
+	----Crawl---: Revert to a Crouch.
+	----Dash----: Revert to a Crouch.
+	----Run-----: Will stop to a Stand.
+	----Air-----: all 8 directions are open; can bounce off enemies CV 6. Alt will be a long overhead slash CV 7. 
+	----W. Slide: Main can only be pointed forward CV 2. Alt is a large over head swipe CV 5.
+	----G. Slide: Revert to a Crouch.
+	----Hanging-: 8 directions, CV 5. Alt is the same as Air, CV 6. If hanging by the spear, only Sub-Weapons. are usable. 
+	----Ladder--: Same as W. Slide
+	
+	Sword-------: Triple Slashing weapon.
+	----Main----: CV 4,5,6 for slashes. 
+	----Alt Main: Hold to charge for a charge attack if enough slots are open. 
+	----Sub-----: 
+	----Slot----: 1
+	----Charge--: Charge Level 2 necessary for a charge attack. CV 5 for Charge attack.
+	----Melee---: 
+	----Stand---: 
+	----Crouch--: 
+	----Walk----: 
+	----Crawl---: 
+	----Dash----: 
+	----Run-----: 
+	----Air-----: 
+	----W. Slide: 
+	----G. Slide: 
+	----Hanging-: 
+	----Ladder--: 
+		
+	Dual Blades-: Multi-slashing Weapon. 
+	----Main----: CV 2, 3, 4, 5, 6, etc
+	----Alt Main: 
+	----Sub-----: 
+	----Slot----: 2
+	----Charge--: 1 
+	----Melee---: 
+	----Stand---: 
+	----Crouch--: 
+	----Walk----: 
+	----Crawl---: 
+	----Dash----: 
+	----Run-----: 
+	----Air-----: 
+	----W. Slide: 
+	----G. Slide: 
+	----Hanging-: 
+	----Ladder--: 
+		
+4.  Controller: The amount of necessary buttons to make it all work. Controller types will be described if a real world controller can work.
+	   Test 1 : The Xbox/PS Standard
+	   C1StkU-: Climb/Hang/Enter door
+	   C1StkR-: Move right
+	   C1StkD-: Climb/Drop down (with jump)/
+	   C1StkL-: Move left
+	   C1Press: 
+	   C2StkU-: 
+	   C2StkR-:
+	   C2StkD-: 
+	   C2StkL-: 
+	   C2Press: 
+	   D Pad U: Mimic stick
+	   D Pad R: Mimic stick
+	   D Pad D: Mimic stick
+	   D Pad L: Mimic stick
+	   L Trig : Sub Attack
+	   L Bump : Crouch
+	   R Trig : Alternate Main Attack
+	   R Bump : Dash
+	   A Press: Jump
+	   B Press: 
+	   X Press: Main Attack
+	   Y Press: Swap Main and Sub Weapons
+	   Start  : Open Menu
+	   Select : 
+	   Center : 
+	   Buttons: 
+
+5.  Unique Mechanics: Mechanics that are not shared amongst everyone.	   
+	   
+5a. Player Specific: Playable characters
+		Player-----: Pick up Items, unrestricted horizontal movement, dash on command, weapon/sub-weapon, overdrive, wall sliding/jumping.
+
+5b. Enemy Specific-: Boss's and Normal Enemies alike
+		Enemies----: No Invincibility, No SP
+		Boss-------: Stats may not match players if boss is a playable character
