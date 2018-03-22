@@ -1,0 +1,9 @@
+C:\Users\omegazeroINFI\Dropbox\gamedev\Spirit Enforcer.gmx\C# form prototyping\Spirit Enforcer Formula Testing\Spirit Enforcer Formula Testing\bin\Debug\Spirit Enforcer Formula Testing.exe.config
+C:\Users\omegazeroINFI\Dropbox\gamedev\Spirit Enforcer.gmx\C# form prototyping\Spirit Enforcer Formula Testing\Spirit Enforcer Formula Testing\bin\Debug\Spirit Enforcer Formula Testing.exe
+C:\Users\omegazeroINFI\Dropbox\gamedev\Spirit Enforcer.gmx\C# form prototyping\Spirit Enforcer Formula Testing\Spirit Enforcer Formula Testing\bin\Debug\Spirit Enforcer Formula Testing.pdb
+C:\Users\omegazeroINFI\Dropbox\gamedev\Spirit Enforcer.gmx\C# form prototyping\Spirit Enforcer Formula Testing\Spirit Enforcer Formula Testing\obj\Debug\Spirit Enforcer Formula Testing.csprojResolveAssemblyReference.cache
+C:\Users\omegazeroINFI\Dropbox\gamedev\Spirit Enforcer.gmx\C# form prototyping\Spirit Enforcer Formula Testing\Spirit Enforcer Formula Testing\obj\Debug\Spirit_Enforcer_Formula_Testing.Properties.Resources.resources
+C:\Users\omegazeroINFI\Dropbox\gamedev\Spirit Enforcer.gmx\C# form prototyping\Spirit Enforcer Formula Testing\Spirit Enforcer Formula Testing\obj\Debug\Spirit Enforcer Formula Testing.csproj.GenerateResource.Cache
+C:\Users\omegazeroINFI\Dropbox\gamedev\Spirit Enforcer.gmx\C# form prototyping\Spirit Enforcer Formula Testing\Spirit Enforcer Formula Testing\obj\Debug\Spirit Enforcer Formula Testing.exe
+C:\Users\omegazeroINFI\Dropbox\gamedev\Spirit Enforcer.gmx\C# form prototyping\Spirit Enforcer Formula Testing\Spirit Enforcer Formula Testing\obj\Debug\Spirit Enforcer Formula Testing.pdb
+C:\Users\omegazeroINFI\Dropbox\gamedev\Spirit Enforcer.gmx\C# form prototyping\Spirit Enforcer Formula Testing\Spirit Enforcer Formula Testing\obj\Debug\Spirit_Enforcer_Formula_Testing.lblTotalBase.resources
